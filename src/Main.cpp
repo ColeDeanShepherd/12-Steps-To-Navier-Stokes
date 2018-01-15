@@ -32,11 +32,12 @@ Vector2f graphPointToPxPoint(const GraphMetrics& graphMetrics, const Vector2f& g
 
 const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
-const double FIXED_TIMESTEP = 1.0 / 60.0;
 
 class Step1
 {
 public:
+    const double fixedTimeStep = 1.0 / 60.0;
+
     Step1()
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
@@ -60,15 +61,72 @@ public:
     }
     void update(const double dt)
     {
-        const auto timeScale = 0.25;
-        const auto scaledDt = (float)(timeScale * dt);
-        const auto c = 1.f;
+        const auto c = 0.25f;
 
         auto newYs = ys;
 
         for(size_t i = 1; i < ys.size(); i++)
         {
-            newYs[i] = ys[i] - (c * (scaledDt / dx) * (ys[i] - ys[i - 1]));
+            newYs[i] = ys[i] - (c * ((float)dt / dx) * (ys[i] - ys[i - 1]));
+        }
+
+        ys = newYs;
+    }
+    void draw(SDL_Renderer* renderer)
+    {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+
+        for(auto i = 0; i < numPoints - 1; i++)
+        {
+            const auto graphPoint0 = Vector2f(graphMetrics.minX + (i * dx), ys[i]);
+            const auto pixelPoint0 = graphPointToPxPoint(graphMetrics, graphPoint0);
+
+            const auto graphPoint1 = Vector2f(graphMetrics.minX + ((i + 1) * dx), ys[i + 1]);
+            const auto pixelPoint1 = graphPointToPxPoint(graphMetrics, graphPoint1);
+
+            SDL_RenderDrawLine(renderer, (int)pixelPoint0.x, (int)pixelPoint0.y, (int)pixelPoint1.x, (int)pixelPoint1.y);
+        }
+    }
+private:
+    GraphMetrics graphMetrics;
+    const int numPoints = 41;
+    float dx;
+    std::vector<float> ys;
+};
+class Step2
+{
+public:
+    const double fixedTimeStep = 1.0 / 60.0;
+
+    Step2()
+    {
+        graphMetrics.width = WINDOW_WIDTH - 20;
+        graphMetrics.height = WINDOW_HEIGHT - 20;
+        graphMetrics.pos = Vector2f(10, 10);
+        graphMetrics.minX = 0;
+        graphMetrics.maxX = 2;
+        graphMetrics.minY = 0;
+        graphMetrics.maxY = 2;
+
+        dx = (graphMetrics.maxX - graphMetrics.minX) / (numPoints - 1);
+
+        ys.resize(numPoints);
+
+        // apply initial condition
+        for(size_t i = 0; i < ys.size(); i++)
+        {
+            const auto x = graphMetrics.minX + (i * dx);
+            ys[i] = ((x >= 0.5f) && (x <= 1)) ? 2.0f : 1.0f;
+        }
+    }
+    void update(const double dt)
+    {
+        const auto timeScale = 0.25;
+        auto newYs = ys;
+
+        for(size_t i = 1; i < ys.size(); i++)
+        {
+            newYs[i] = ys[i] - (ys[i] * ((float)(timeScale * dt) / dx) * (ys[i] - ys[i - 1]));
         }
 
         ys = newYs;
@@ -105,7 +163,8 @@ int main(int argc, char* argv[])
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
 
-    Step1 step;
+    //Step1 step;
+    Step2 step;
 
     auto lastPerfCount = SDL_GetPerformanceCounter();
     double accumulatedTime = 0;
@@ -129,10 +188,10 @@ int main(int argc, char* argv[])
         }
 
         // update
-        while(accumulatedTime >= FIXED_TIMESTEP)
+        while(accumulatedTime >= step.fixedTimeStep)
         {
-            step.update(FIXED_TIMESTEP);
-            accumulatedTime -= FIXED_TIMESTEP;
+            step.update(step.fixedTimeStep);
+            accumulatedTime -= step.fixedTimeStep;
         }
 
         // clear window
