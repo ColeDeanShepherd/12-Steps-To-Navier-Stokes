@@ -50,12 +50,12 @@ void renderLineGraph(SDL_Renderer* renderer, const GraphMetrics& graphMetrics, c
     }
 }
 
-class Step1LinearConvection
+class Step1LinearConvection1D
 {
 public:
     const double fixedTimeStep = 1.0 / 60.0;
 
-    Step1LinearConvection()
+    Step1LinearConvection1D()
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
@@ -67,44 +67,44 @@ public:
 
         dx = (graphMetrics.maxX - graphMetrics.minX) / (numPoints - 1);
 
-        ys.resize(numPoints);
+        heights.resize(numPoints);
 
         // apply initial condition
-        for(size_t i = 0; i < ys.size(); i++)
+        for(size_t i = 0; i < heights.size(); i++)
         {
             const auto x = graphMetrics.minX + (i * dx);
-            ys[i] = ((x >= 0.5f) && (x <= 1)) ? 2.0f : 1.0f;
+            heights[i] = ((x >= 0.5f) && (x <= 1)) ? 2.0f : 1.0f;
         }
     }
     void update(const double dt)
     {
         const auto c = 0.25f;
 
-        auto newYs = ys;
+        auto newYs = heights;
 
-        for(size_t i = 1; i < ys.size(); i++)
+        for(size_t i = 1; i < heights.size(); i++)
         {
-            newYs[i] = ys[i] - (c * (dt / dx) * (ys[i] - ys[i - 1]));
+            newYs[i] = heights[i] - (c * (dt / dx) * (heights[i] - heights[i - 1]));
         }
 
-        ys = newYs;
+        heights = newYs;
     }
     void draw(SDL_Renderer* renderer)
     {
-        renderLineGraph(renderer, graphMetrics, graphMetrics.minX, dx, ys);
+        renderLineGraph(renderer, graphMetrics, graphMetrics.minX, dx, heights);
     }
 private:
     GraphMetrics graphMetrics;
     const int numPoints = 41;
     double dx;
-    std::vector<double> ys;
+    std::vector<double> heights;
 };
-class Step2NonlinearConvection
+class Step2NonlinearConvection1D
 {
 public:
     const double fixedTimeStep = 1.0 / 60.0;
 
-    Step2NonlinearConvection()
+    Step2NonlinearConvection1D()
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
@@ -147,12 +147,12 @@ private:
     double dx;
     std::vector<double> ys;
 };
-class Step3Diffusion
+class Step3Diffusion1D
 {
 public:
     double fixedTimeStep;
 
-    Step3Diffusion()
+    Step3Diffusion1D()
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
@@ -199,12 +199,12 @@ private:
     double dx;
     std::vector<double> ys;
 };
-class Step4BurgersEquation
+class Step4BurgersEquation1D
 {
 public:
     double fixedTimeStep;
 
-    Step4BurgersEquation()
+    Step4BurgersEquation1D()
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
@@ -266,6 +266,128 @@ private:
     double nu; // viscosity
     std::vector<double> ys;
 };
+class Step5LinearConvection2D
+{
+public:
+    double fixedTimeStep;
+
+    Step5LinearConvection2D()
+    {
+        graphMetrics.width = WINDOW_WIDTH - 20;
+        graphMetrics.height = WINDOW_HEIGHT - 20;
+        graphMetrics.pos = Vector2f(10, 10);
+        graphMetrics.minX = 0;
+        graphMetrics.maxX = 2;
+        graphMetrics.minY = 0;
+        graphMetrics.maxY = 2;
+
+        dx = (graphMetrics.maxX - graphMetrics.minX) / (numX - 1);
+        dy = (graphMetrics.maxY - graphMetrics.minY) / (numY - 1);
+
+        heights = std::vector<std::vector<double>>(numY, std::vector<double>(numX));
+
+        const auto sigma = 0.2;
+        fixedTimeStep = sigma * dx;
+
+        // apply initial condition
+        for(size_t rowIndex = 0; rowIndex < heights.size(); rowIndex++)
+        {
+            const auto y = graphMetrics.minY + (rowIndex * dy);
+
+            for(size_t columnIndex = 0; columnIndex < heights[rowIndex].size(); columnIndex++)
+            {
+                const auto x = graphMetrics.minX + (columnIndex * dx);
+                heights[rowIndex][columnIndex] = ((x >= 0.5) && (x <= 1)) && ((y >= 0.5) && (y <= 1)) ? 2 : 1;
+            }
+        }
+
+        heightMap = NULL;
+    }
+    void update(const double dt)
+    {
+        const auto timeScale = 0.25;
+        const auto scaledDt = timeScale * dt;
+
+        const auto c = 1.0;
+
+        auto newHeights = heights;
+
+        // update
+        for(size_t i = 1; i < heights.size(); i++)
+        {
+            for(size_t j = 1; j < heights[i].size(); j++)
+            {
+                newHeights[i][j] = heights[i][j]
+                    - (((c * scaledDt) / dx) * (heights[i][j] - heights[i - 1][j]))
+                    - (((c * scaledDt) / dy) * (heights[i][j] - heights[i][j - 1]));
+            }
+        }
+
+        // apply boundary conditions
+        for(size_t i = 0; i < heights.size(); i++)
+        {
+            for(size_t j = 0; j < heights[i].size(); j++)
+            {
+                if((i == 0) || (i == (heights.size() - 1)) || (j == 0) || (j == (heights[i].size() - 1)))
+                {
+                    newHeights[i][j] = 1;
+                }
+            }
+        }
+
+        heights = newHeights;
+    }
+    void draw(SDL_Renderer* renderer)
+    {
+        if(heightMap == NULL)
+        {
+            heightMap = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, numX, numY);
+        }
+
+        // update the heightmap
+        unsigned char* pixelBytes;
+        int pitch;
+        const auto failedLocking = SDL_LockTexture(heightMap, NULL, (void**)&pixelBytes, &pitch) != 0;
+
+        if(failedLocking)
+        {
+            throw new std::exception("Failed locking the texture.");
+        }
+
+        for(auto rowIndex = 0; rowIndex < numY; rowIndex++)
+        {
+            for(auto columnIndex = 0; columnIndex < numX; columnIndex++)
+            {
+                const auto pixelBytesOffset = (rowIndex * pitch) + (4 * columnIndex);
+                const auto pixelValuePercent = heights[rowIndex][columnIndex] / graphMaxHeight;
+                const auto pixelValue = (unsigned char)(255 * pixelValuePercent);
+
+                pixelBytes[pixelBytesOffset + 3] = pixelValue; // R
+                pixelBytes[pixelBytesOffset + 2] = pixelValue; // G
+                pixelBytes[pixelBytesOffset + 1] = pixelValue; // B
+                pixelBytes[pixelBytesOffset + 0] = 255; // A
+            }
+        }
+
+        SDL_UnlockTexture(heightMap);
+        
+        SDL_Rect graphRect;
+        graphRect.w = (int)graphMetrics.width;
+        graphRect.h = (int)graphMetrics.height;
+        graphRect.x = (int)graphMetrics.pos.x;
+        graphRect.y = (int)graphMetrics.pos.y;
+        SDL_RenderCopy(renderer, heightMap, NULL, &graphRect);
+    }
+private:
+    GraphMetrics graphMetrics;
+    const int numX = 81;
+    const int numY = 81;
+    const double graphMaxHeight = 3;
+    double dx;
+    double dy;
+    std::vector<std::vector<double>> heights;
+    SDL_Texture* heightMap;
+};
 
 int main(int argc, char* argv[])
 {
@@ -277,10 +399,11 @@ int main(int argc, char* argv[])
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
 
-    //Step1LinearConvection step;
-    //Step2NonlinearConvection step;
-    //Step3Diffusion step;
-    Step4BurgersEquation step;
+    //Step1LinearConvection1D step;
+    //Step2NonlinearConvection1D step;
+    //Step3Diffusion1D step;
+    //Step4BurgersEquation1D step;
+    Step5LinearConvection2D step;
 
     auto lastPerfCount = SDL_GetPerformanceCounter();
     double accumulatedTime = 0;
