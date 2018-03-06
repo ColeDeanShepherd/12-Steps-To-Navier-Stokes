@@ -126,6 +126,26 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\src\Main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\Core.h" />
+    <ClInclude Include="..\..\..\src\FiniteDifference.h" />
+    <ClInclude Include="..\..\..\src\GraphMetrics.h" />
+    <ClInclude Include="..\..\..\src\LinearAlgebra.h" />
+    <ClInclude Include="..\..\..\src\Render.h" />
+    <ClInclude Include="..\..\..\src\Step1.h" />
+    <ClInclude Include="..\..\..\src\Step10.h" />
+    <ClInclude Include="..\..\..\src\Step11.h" />
+    <ClInclude Include="..\..\..\src\Step12.h" />
+    <ClInclude Include="..\..\..\src\Step2.h" />
+    <ClInclude Include="..\..\..\src\Step3.h" />
+    <ClInclude Include="..\..\..\src\Step4.h" />
+    <ClInclude Include="..\..\..\src\Step5.h" />
+    <ClInclude Include="..\..\..\src\Step6.h" />
+    <ClInclude Include="..\..\..\src\Step7.h" />
+    <ClInclude Include="..\..\..\src\Step8.h" />
+    <ClInclude Include="..\..\..\src\Step9.h" />
+    <ClInclude Include="..\..\..\src\Vector2d.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
