@@ -1,31 +1,112 @@
 #include <vector>
 #include <math.h>
+#include <sstream>
 
 #include <SDL.h>
 
-struct Vector2f
+namespace std
 {
-    float x, y;
+    template <typename T>
+    T clamp(T value, T min, T max)
+    {
+        if(value < min)
+        {
+            return min;
+        }
+        else if(value > max)
+        {
+return max;
+        } else
+        {
+        return value;
+        }
+    }
+}
 
-    Vector2f() {}
-    Vector2f(const float x, const float y) : x(x), y(y) {}
+struct Vector2d
+{
+    double x, y;
+
+    Vector2d() {}
+    Vector2d(const double x, const double y) : x(x), y(y) {}
 };
+
+Vector2d negate(const Vector2d& v)
+{
+    return Vector2d(-v.x, -v.y);
+}
+Vector2d operator - (const Vector2d& v)
+{
+    return negate(v);
+}
+
+Vector2d add(const Vector2d& a, const Vector2d& b)
+{
+    return Vector2d(a.x + b.x, a.y + b.y);
+}
+Vector2d operator + (const Vector2d& a, const Vector2d& b)
+{
+    return add(a, b);
+}
+
+Vector2d sub(const Vector2d& a, const Vector2d& b)
+{
+    return Vector2d(a.x - b.x, a.y - b.y);
+}
+Vector2d operator - (const Vector2d& a, const Vector2d& b)
+{
+    return sub(a, b);
+}
+
+double dot(const Vector2d& a, const Vector2d& b)
+{
+    return (a.x * b.x) + (a.y * b.y);
+}
+double norm(const Vector2d& v)
+{
+    return sqrt(dot(v, v));
+}
+Vector2d div(const Vector2d& v, const double d)
+{
+    return Vector2d(v.x / d, v.y / d);
+}
+
+Vector2d mul(const double s, const Vector2d& v)
+{
+    return Vector2d(s * v.x, s * v.y);
+}
+Vector2d operator * (const double s, const Vector2d& v)
+{
+    return mul(s, v);
+}
+
+Vector2d normalized(const Vector2d& v)
+{
+    const auto vNorm = norm(v);
+    return (vNorm > 0) ? div(v, vNorm) : Vector2d(0, 0);
+}
+Vector2d withMaxNorm(const Vector2d& v, const double maxNorm)
+{
+    const auto vNorm = norm(v);
+    return (vNorm <= maxNorm) ? v : maxNorm * normalized(v);
+}
+
 struct GraphMetrics
 {
-    float width, height;
-    Vector2f pos;
+    double width, height;
+    Vector2d pos;
     double minX, maxX;
     double minY, maxY;
 
     GraphMetrics() {}
 };
 
-Vector2f graphPointToPxPoint(const GraphMetrics& graphMetrics, const Vector2f& graphPoint)
+Vector2d graphPointToPxPoint(const GraphMetrics& graphMetrics, const Vector2d& graphPoint)
 {
     const auto xPercentFromLeft = (graphPoint.x - graphMetrics.minX) / (graphMetrics.maxX - graphMetrics.minX);
     const auto yPercentFromBottom = (graphPoint.y - graphMetrics.minY) / (graphMetrics.maxY - graphMetrics.minY);
 
-    return Vector2f(
+    return Vector2d(
         graphMetrics.pos.x + (xPercentFromLeft * graphMetrics.width),
         (graphMetrics.pos.y + graphMetrics.height) - (yPercentFromBottom * graphMetrics.height)
     );
@@ -40,14 +121,88 @@ void renderLineGraph(SDL_Renderer* renderer, const GraphMetrics& graphMetrics, c
 
     for(auto i = 0; i < ys.size() - 1; i++)
     {
-        const auto graphPoint0 = Vector2f(x0 + (i * dx), ys[i]);
+        const auto graphPoint0 = Vector2d(x0 + (i * dx), ys[i]);
         const auto pixelPoint0 = graphPointToPxPoint(graphMetrics, graphPoint0);
 
-        const auto graphPoint1 = Vector2f(x0 + ((i + 1) * dx), ys[i + 1]);
+        const auto graphPoint1 = Vector2d(x0 + ((i + 1) * dx), ys[i + 1]);
         const auto pixelPoint1 = graphPointToPxPoint(graphMetrics, graphPoint1);
 
         SDL_RenderDrawLine(renderer, (int)pixelPoint0.x, (int)pixelPoint0.y, (int)pixelPoint1.x, (int)pixelPoint1.y);
     }
+}
+
+std::vector<double> zeros(const size_t rowCount)
+{
+    return std::vector<double>(rowCount, 0);
+}
+std::vector<std::vector<double>> zeros(const size_t rowCount, const size_t columnCount)
+{
+    return std::vector<std::vector<double>>(rowCount, std::vector<double>(columnCount, 0));
+}
+std::string toString(const std::vector<std::vector<double>>& matrix)
+{
+    std::ostringstream sstream;
+
+    for(size_t i = 0; i < matrix.size(); i++)
+    {
+        if(i > 0)
+        {
+            sstream << '\n';
+        }
+
+        for(size_t j = 0; j < matrix[0].size(); j++)
+        {
+            if(j > 0)
+            {
+                sstream << ',';
+            }
+            
+            sstream << matrix[i][j];
+        }
+    }
+
+    return sstream.str();
+}
+
+Vector2d gradient1stOrderCentralDiff(
+    const std::vector<std::vector<double>>& f,
+    const size_t xIndex, const size_t yIndex,
+    const double dx, const double dy
+)
+{
+    const auto dfdx = (f[xIndex + 1][yIndex] - f[xIndex - 1][yIndex]) / (2 * dx);
+    const auto dfdy = (f[xIndex][yIndex + 1] - f[xIndex][yIndex - 1]) / (2 * dy);
+
+    return Vector2d(dfdx, dfdy);
+}
+double divergence1stOrderBackwardDiff(
+    const std::vector<std::vector<Vector2d>>& v,
+    const size_t xIndex, const size_t yIndex,
+    const double dx, const double dy
+)
+{
+    const auto dvxdx = (v[xIndex][yIndex].x - v[xIndex - 1][yIndex].x) / dx;
+    const auto dvydy = (v[xIndex][yIndex].y - v[xIndex][yIndex - 1].y) / dy;
+
+    return dvxdx + dvydy;
+}
+Vector2d laplacian2ndOrderCentralDiff(
+    const std::vector<std::vector<Vector2d>>& v,
+    const size_t xIndex, const size_t yIndex,
+    const double dx, const double dy
+)
+{
+    const auto d2vxdx = (v[xIndex + 1][yIndex].x - (2 * v[xIndex][yIndex].x) + v[xIndex - 1][yIndex].x)
+        / (dx * dx);
+    const auto d2vxdy = (v[xIndex][yIndex + 1].x - (2 * v[xIndex][yIndex].x) + v[xIndex][yIndex - 1].x)
+        / (dy * dy);
+
+    const auto d2vydx = (v[xIndex + 1][yIndex].y - (2 * v[xIndex][yIndex].y) + v[xIndex - 1][yIndex].y)
+        / (dx * dx);
+    const auto d2vydy = (v[xIndex][yIndex + 1].y - (2 * v[xIndex][yIndex].y) + v[xIndex][yIndex - 1].y)
+        / (dy * dy);
+
+    return Vector2d(d2vxdx + d2vxdy, d2vydx + d2vydy);
 }
 
 class Step1LinearConvection1D
@@ -59,7 +214,7 @@ public:
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
-        graphMetrics.pos = Vector2f(10, 10);
+        graphMetrics.pos = Vector2d(10, 10);
         graphMetrics.minX = 0;
         graphMetrics.maxX = 2;
         graphMetrics.minY = 0;
@@ -108,7 +263,7 @@ public:
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
-        graphMetrics.pos = Vector2f(10, 10);
+        graphMetrics.pos = Vector2d(10, 10);
         graphMetrics.minX = 0;
         graphMetrics.maxX = 2;
         graphMetrics.minY = 0;
@@ -156,7 +311,7 @@ public:
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
-        graphMetrics.pos = Vector2f(10, 10);
+        graphMetrics.pos = Vector2d(10, 10);
         graphMetrics.minX = 0;
         graphMetrics.maxX = 2;
         graphMetrics.minY = 0;
@@ -208,7 +363,7 @@ public:
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
-        graphMetrics.pos = Vector2f(10, 10);
+        graphMetrics.pos = Vector2d(10, 10);
         graphMetrics.minX = 0;
         graphMetrics.maxX = 2 * M_PI;
         graphMetrics.minY = 0;
@@ -275,7 +430,7 @@ public:
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
-        graphMetrics.pos = Vector2f(10, 10);
+        graphMetrics.pos = Vector2d(10, 10);
         graphMetrics.minX = 0;
         graphMetrics.maxX = 2;
         graphMetrics.minY = 0;
@@ -416,7 +571,7 @@ public:
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
-        graphMetrics.pos = Vector2f(10, 10);
+        graphMetrics.pos = Vector2d(10, 10);
         graphMetrics.minX = 0;
         graphMetrics.maxX = 2;
         graphMetrics.minY = 0;
@@ -590,7 +745,7 @@ public:
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
-        graphMetrics.pos = Vector2f(10, 10);
+        graphMetrics.pos = Vector2d(10, 10);
         graphMetrics.minX = 0;
         graphMetrics.maxX = 2;
         graphMetrics.minY = 0;
@@ -731,7 +886,7 @@ public:
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
-        graphMetrics.pos = Vector2f(10, 10);
+        graphMetrics.pos = Vector2d(10, 10);
         graphMetrics.minX = 0;
         graphMetrics.maxX = 2;
         graphMetrics.minY = 0;
@@ -900,7 +1055,7 @@ public:
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
-        graphMetrics.pos = Vector2f(10, 10);
+        graphMetrics.pos = Vector2d(10, 10);
         graphMetrics.minX = 0;
         graphMetrics.maxX = 2;
         graphMetrics.minY = 0;
@@ -1044,7 +1199,7 @@ public:
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
-        graphMetrics.pos = Vector2f(10, 10);
+        graphMetrics.pos = Vector2d(10, 10);
         graphMetrics.minX = 0;
         graphMetrics.maxX = 2;
         graphMetrics.minY = 0;
@@ -1056,27 +1211,10 @@ public:
         fixedTimeStep = 1.0 / 60;
 
         // init p
-        p = std::vector<std::vector<double>>(numY, std::vector<double>(numX));
-
-        for(size_t rowIndex = 0; rowIndex < p.size(); rowIndex++)
-        {
-            for(size_t columnIndex = 0; columnIndex < p[rowIndex].size(); columnIndex++)
-            {
-                p[rowIndex][columnIndex] = 0;
-            }
-        }
+        p = zeros(numY, numX);
 
         // init b
-        b = std::vector<std::vector<double>>(numY, std::vector<double>(numX));
-
-        for(size_t rowIndex = 0; rowIndex < b.size(); rowIndex++)
-        {
-            for(size_t columnIndex = 0; columnIndex < b[rowIndex].size(); columnIndex++)
-            {
-                b[rowIndex][columnIndex] = 0;
-            }
-        }
-
+        b = zeros(numY, numX);
         b[(int)((double)numY / 4)][(int)((double)numX / 4)] = 100;
         b[(int)(3 * (double)numY / 4)][(int)(3 * (double)numX / 4)] = -100;
 
@@ -1195,6 +1333,248 @@ private:
     std::vector<std::vector<double>> b;
     SDL_Texture* heightMap;
 };
+class Step11CavityFlow
+{
+public:
+    const double fixedTimeStep = 1.0 / 60.0;
+
+    Step11CavityFlow()
+    {
+        graphMetrics.width = WINDOW_WIDTH - 20;
+        graphMetrics.height = WINDOW_HEIGHT - 20;
+        graphMetrics.pos = Vector2d(10, 10);
+        graphMetrics.minX = 0;
+        graphMetrics.maxX = 2;
+        graphMetrics.minY = 0;
+        graphMetrics.maxY = 2;
+
+        dx = (graphMetrics.maxX - graphMetrics.minX) / (numX - 1);
+        dy = (graphMetrics.maxY - graphMetrics.minY) / (numY - 1);
+
+        b = zeros(numX, numY);
+        p = zeros(numX, numY);
+        fv = std::vector<std::vector<Vector2d>>(numX, std::vector<Vector2d>(numY, Vector2d(0, 0)));
+
+        heightMap = NULL;
+    }
+
+    void buildUpB(const double dt)
+    {
+        for(size_t i = 1; i < numX - 1; i++)
+        {
+            for(size_t j = 1; j < numY - 1; j++)
+            {
+                b[i][j] = getB(i, j, dt);
+            }
+        }
+    }
+    double getB(const size_t i, const size_t j, const double dt)
+    {
+        const auto term1 = (1.0 / dt) * divergence1stOrderBackwardDiff(fv, i, j, dx, dy);
+        const auto term2 = pow((fv[i + 1][j].x - fv[i - 1][j].x) / (2 * dx), 2);
+        const auto term3 = 2 *
+            ((fv[i][j + 1].x - fv[i][j - 1].x) / (2 * dy)) *
+            ((fv[i + 1][j].y - fv[i - 1][j].y) / (2 * dx));
+        const auto term4 = pow((fv[i][j + 1].y - fv[i][j - 1].y) / (2 * dy), 2);
+
+        return term1 - term2 - term3 - term4;
+    }
+    void iterateP(const double dt)
+    {
+        auto newP = p;
+        for(size_t i = 1; i < numX - 1; i++)
+        {
+            for(size_t j = 1; j < numY - 1; j++)
+            {
+                const auto term1Numerator =
+                    ((dy * dy) * (p[i + 1][j] + p[i - 1][j])) +
+                    ((dx * dx) * (p[i][j + 1] + p[i][j - 1]));
+                const auto termDenominator = 2 * ((dx * dx) + (dy * dy));
+                const auto term1 = term1Numerator / termDenominator;
+                const auto term2 = ((rho * (dx * dx) * (dy * dy)) / termDenominator) * getB(i, j, dt);
+
+                newP[i][j] = term1 - term2;
+            }
+        }
+
+        p = newP;
+        
+        // dp/dy = 0 at y = 0
+        for(size_t i = 0; i < numX; i++)
+        {
+            p[i][0] = p[i][1];
+        }
+
+        // p = 0 at y = 2
+        for(size_t i = 0; i < numX; i++)
+        {
+            p[i][numY - 1] = 0;
+        }
+
+        // dp/dx = 0 at x = 0, 2
+        for(size_t i = 0; i < numX; i++)
+        {
+            // dp/dx = 0 at x = 0
+            p[0][i] = p[1][i];
+
+            // dp/dx = 0 at x = 2
+            p[numX - 1][i] = p[numX - 2][i];
+        }
+    }
+    void updateP(const double dt)
+    {
+        for(size_t iter = 0; iter < numPIterations; iter++)
+        {
+            iterateP(dt);
+        }
+    }
+
+    void updateFlowVelocity(const double dt)
+    {
+        auto newFv = fv;
+        for(size_t i = 1; i < numX - 1; i++)
+        {
+            for(size_t j = 1; j < numY - 1; j++)
+            {
+                const auto divergenceOfV = divergence1stOrderBackwardDiff(fv, i, j, dx, dy);
+                const auto gradientOfP = gradient1stOrderCentralDiff(p, i, j, dx, dy);
+                const auto laplacianOfV = laplacian2ndOrderCentralDiff(fv, i, j, dx, dy);
+
+                const auto dfvdt = -(divergenceOfV * fv[i][j])
+                    - ((1.0 / rho) * gradientOfP)
+                    + (nu * laplacianOfV);
+
+                newFv[i][j] = fv[i][j] + (dt * (dfvdt));
+            }
+        }
+
+        fv = newFv;
+
+        // v = 0 at boundaries
+        for(size_t i = 0; i < numX; i++)
+        {
+            fv[0][i] = Vector2d(0, 0); // v = 0 at x = 0
+            fv[numX - 1][i] = Vector2d(0, 0); // v = 0 at x = 2
+            fv[i][0] = Vector2d(0, 0); // v = 0 at y = 0
+            fv[i][numY - 1] = Vector2d(0, 0); // v = 0 at y = 2
+        }
+
+        // vx = 1 at y = 2
+        for(size_t i = 0; i < numX; i++)
+        {
+            fv[i][numY - 1].x = 1;
+        }
+    }
+    
+    void update(const double dt)
+    {
+        const auto scaledDt = timeScale * dt;
+
+        updateP(scaledDt);
+        updateFlowVelocity(scaledDt);
+    }
+
+    void updateHeightmap()
+    {
+        unsigned char* pixelBytes;
+        int pitch;
+        const auto failedLocking = SDL_LockTexture(heightMap, NULL, (void**)&pixelBytes, &pitch) != 0;
+
+        if(failedLocking)
+        {
+            throw new std::exception("Failed locking the texture.");
+        }
+
+        // pixels go from top to bottom, left to right
+        for(auto pixelRowIndex = 0; pixelRowIndex < numY; pixelRowIndex++)
+        {
+            for(auto pixelColumnIndex = 0; pixelColumnIndex < numX; pixelColumnIndex++)
+            {
+                const auto pixelBytesOffset = (pitch * pixelRowIndex) + (4 * pixelColumnIndex);
+
+                const auto pPercent = std::clamp<double>(
+                    (p[pixelColumnIndex][(numY - 1) - pixelRowIndex] - minP) / (maxP - minP),
+                    0, 1);
+
+                const auto pixelValue = (unsigned char)(255 * pPercent);
+                
+                pixelBytes[pixelBytesOffset + 3] = pixelValue; // R
+                pixelBytes[pixelBytesOffset + 2] = pixelValue; // G
+                pixelBytes[pixelBytesOffset + 1] = pixelValue; // B
+                pixelBytes[pixelBytesOffset + 0] = 255; // A
+            }
+        }
+
+        SDL_UnlockTexture(heightMap);
+    }
+    void drawVelocityVectors(SDL_Renderer* renderer)
+    {
+        for(size_t i = 0; i < numX; i++)
+        {
+            for(size_t j = 0; j < numY; j++)
+            {
+                const auto pixelWidth = (graphMetrics.maxX - graphMetrics.minX) / numX;
+                const auto pixelHeight = (graphMetrics.maxY - graphMetrics.minY) / numY;
+
+                const auto arrow = withMaxNorm(fv[i][j], (3.0 / 4.0) * pixelHeight);
+                const auto velocityTailGraphPos = Vector2d(
+                    graphMetrics.minX + (i * pixelWidth) + (pixelWidth / 2),
+                    graphMetrics.minY + (j * pixelHeight) + (pixelHeight / 2));
+                const auto velocityHeadGraphPos = add(velocityTailGraphPos, arrow);
+                const auto velocityTailPxPos = graphPointToPxPoint(graphMetrics, velocityTailGraphPos);
+                const auto velocityHeadPxPos = graphPointToPxPoint(graphMetrics, velocityHeadGraphPos);
+
+                SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+                SDL_RenderDrawLine(
+                    renderer, velocityTailPxPos.x, velocityTailPxPos.y,
+                    velocityHeadPxPos.x, velocityHeadPxPos.y
+                );
+
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                SDL_RenderDrawPoint(renderer, velocityHeadPxPos.x, velocityHeadPxPos.y);
+            }
+        }
+    }
+    void draw(SDL_Renderer* renderer)
+    {
+        if(heightMap == NULL)
+        {
+            heightMap = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, numX, numY);
+        }
+
+        updateHeightmap();
+
+        SDL_Rect graphRect;
+        graphRect.w = (int)graphMetrics.width;
+        graphRect.h = (int)graphMetrics.height;
+        graphRect.x = (int)graphMetrics.pos.x;
+        graphRect.y = (int)graphMetrics.pos.y;
+
+        SDL_RenderCopy(renderer, heightMap, NULL, &graphRect);
+
+        // draw velocity vectors
+        drawVelocityVectors(renderer);
+    }
+private:
+    GraphMetrics graphMetrics;
+    const int numX = 41;
+    const int numY = 41;
+    const double timeScale = 0.006;
+    const int numPIterations = 50;
+    const double c = 1;
+    const double rho = 1;
+    const double nu = 0.1;
+    const double minP = -4;
+    const double maxP = 4;
+    double dx;
+    double dy;
+    std::vector<std::vector<Vector2d>> fv;
+    std::vector<std::vector<double>> p;
+    std::vector<std::vector<double>> b;
+    SDL_Texture* heightMap;
+};
+
+const auto maxUpdatesPerFrame = 5;
 
 int main(int argc, char* argv[])
 {
@@ -1215,7 +1595,8 @@ int main(int argc, char* argv[])
     //Step7Diffusion2D step;
     //Step8BurgersEquation2D step;
     //Step9LaplaceEquation2D step;
-    Step10LaplaceEquation2D step;
+    //Step10LaplaceEquation2D step;
+    Step11CavityFlow step;
 
     auto lastPerfCount = SDL_GetPerformanceCounter();
     double accumulatedTime = 0;
@@ -1239,17 +1620,19 @@ int main(int argc, char* argv[])
         }
 
         // update
-        while(accumulatedTime >= step.fixedTimeStep)
+        auto updatesThisFrame = 0;
+        while((updatesThisFrame < maxUpdatesPerFrame) && (accumulatedTime >= step.fixedTimeStep))
         {
             step.update(step.fixedTimeStep);
             accumulatedTime -= step.fixedTimeStep;
+
+            updatesThisFrame++;
         }
 
         // clear window
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
         SDL_RenderClear(renderer);
 
-        // draw stored lines
         step.draw(renderer);
 
         // render window
