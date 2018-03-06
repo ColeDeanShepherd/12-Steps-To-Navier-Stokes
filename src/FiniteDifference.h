@@ -2,9 +2,14 @@
 
 #include <vector>
 #include "Vector2d.h"
+
 double gradient1stOrderBackwardDiff(const std::vector<double>& f, const size_t i, const double dx)
 {
     return (f[i] - f[i - 1]) / dx;
+}
+double gradient2ndOrderCentralDiff(const std::vector<double>& f, const size_t i, const double dx)
+{
+    return (f[i + 1] - (2 * f[i]) + f[i - 1]) / (dx * dx);
 }
 Vector2d gradient1stOrderCentralDiff(
     const std::vector<std::vector<double>>& f,

@@ -27,7 +27,7 @@ public:
         u = std::vector<double>(numPoints);
 
         // apply initial condition
-        for(size_t i = 0; i < u.size(); i++)
+        for(size_t i = 0; i < numPoints; i++)
         {
             const auto x = graphMetrics.minX + (i * dx);
             u[i] = ((x >= 0.5f) && (x <= 1)) ? 2.0f : 1.0f;
@@ -37,7 +37,7 @@ public:
     {
         auto newU = u;
 
-        for(size_t i = 1; i < u.size(); i++)
+        for(size_t i = 1; i < numPoints; i++)
         {
             const auto dudx = gradient1stOrderBackwardDiff(u, i, dx);
             const auto dudt = -(c * dudx);
@@ -51,9 +51,10 @@ public:
         renderLineGraph(renderer, graphMetrics, graphMetrics.minX, dx, u);
     }
 private:
-    GraphMetrics graphMetrics;
     const int numPoints = 41;
     const double c = 0.25;
+
+    GraphMetrics graphMetrics;
     double dx;
     std::vector<double> u;
 };

@@ -23,53 +23,54 @@ public:
 
         dx = (graphMetrics.maxX - graphMetrics.minX) / (numPoints - 1);
 
-        ys.resize(numPoints);
-
-        nu = 0.07;
+        u.resize(numPoints);
         fixedTimeStep = dx * nu;
 
         // apply initial condition
-        const auto nu = 0.3; // viscosity
-        for(size_t i = 0; i < ys.size(); i++)
+        const auto icNu = 0.3; // viscosity
+        for(size_t i = 0; i < numPoints; i++)
         {
             const auto x = graphMetrics.minX + (i * dx);
 
             const auto xMinus2Pi = x - (2 * M_PI);
-            const auto e1 = -((x * x) / (4 * nu));
-            const auto e2 = -(pow(xMinus2Pi, 2) / (4 * nu));
+            const auto e1 = -((x * x) / (4 * icNu));
+            const auto e2 = -(pow(xMinus2Pi, 2) / (4 * icNu));
             const auto phi = exp(e1) + exp(e2);
-            const auto dPhiDx = -(1.0 / (2 * nu)) * ((x * exp(e1)) + (xMinus2Pi * exp(e2)));
-            ys[i] = -((2 * nu) / phi) * dPhiDx + 4;
+            const auto dPhiDx = -(1.0 / (2 * icNu)) * ((x * exp(e1)) + (xMinus2Pi * exp(e2)));
+            u[i] = -((2 * icNu) / phi) * dPhiDx + 4;
         }
     }
     void update(const double dt)
     {
-        const auto timeScale = 1.0 / 4;
         const auto scaledDt = timeScale * dt;
-        auto newYs = ys;
+        auto newU = u;
 
-        for(size_t i = 1; i < ys.size(); i++)
+        for(size_t i = 1; i < numPoints; i++)
         {
-            const auto iPlus1 = (i + 1) % ys.size();
+            const auto iPlus1 = (i + 1) % numPoints;
+            
+            const auto dudx = gradient1stOrderBackwardDiff(u, i, dx);
+            const auto d2udx2 = (u[iPlus1] - (2 * u[i]) + u[i - 1]) / (dx * dx);
+            const auto dudt = (nu * d2udx2) - (u[i] * dudx);
 
-            newYs[i] = ys[i]
-                - (((ys[i] * scaledDt) / dx) * (ys[i] - ys[i - 1]))
-                + (((nu * scaledDt) / (dx * dx)) * (ys[iPlus1] - (2 * ys[i]) + ys[i - 1]));
+            newU[i] = u[i] + (scaledDt * dudt);
         }
 
         // apply boundary conditions
-        newYs[0] = newYs[newYs.size() - 1];
+        newU[0] = newU[newU.size() - 1];
 
-        ys = newYs;
+        u = newU;
     }
     void draw(SDL_Renderer* renderer)
     {
-        renderLineGraph(renderer, graphMetrics, graphMetrics.minX, dx, ys);
+        renderLineGraph(renderer, graphMetrics, graphMetrics.minX, dx, u);
     }
 private:
-    GraphMetrics graphMetrics;
     const int numPoints = 101;
+    const double nu = 0.07; // viscosity
+    const double timeScale = 1.0 / 4;
+
+    GraphMetrics graphMetrics;
     double dx;
-    double nu; // viscosity
-    std::vector<double> ys;
+    std::vector<double> u;
 };

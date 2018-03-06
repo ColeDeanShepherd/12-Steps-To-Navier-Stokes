@@ -24,34 +24,38 @@ public:
 
         dx = (graphMetrics.maxX - graphMetrics.minX) / (numPoints - 1);
 
-        ys.resize(numPoints);
+        u = std::vector<double>(numPoints);
 
         // apply initial condition
-        for(size_t i = 0; i < ys.size(); i++)
+        for(size_t i = 0; i < numPoints; i++)
         {
             const auto x = graphMetrics.minX + (i * dx);
-            ys[i] = ((x >= 0.5f) && (x <= 1)) ? 2.0f : 1.0f;
+            u[i] = ((x >= 0.5f) && (x <= 1)) ? 2.0f : 1.0f;
         }
     }
     void update(const double dt)
     {
         const auto timeScale = 1.0 / 4;
-        auto newYs = ys;
+        const auto scaledDt = timeScale * dt;
+        auto newU = u;
 
-        for(size_t i = 1; i < ys.size(); i++)
+        for(size_t i = 1; i < numPoints; i++)
         {
-            newYs[i] = ys[i] - (ys[i] * ((timeScale * dt) / dx) * (ys[i] - ys[i - 1]));
+            const auto dudx = gradient1stOrderBackwardDiff(u, i, dx);
+            const auto dudt = -(u[i] * dudx);
+            newU[i] = u[i] + scaledDt * dudt;
         }
 
-        ys = newYs;
+        u = newU;
     }
     void draw(SDL_Renderer* renderer)
     {
-        renderLineGraph(renderer, graphMetrics, graphMetrics.minX, dx, ys);
+        renderLineGraph(renderer, graphMetrics, graphMetrics.minX, dx, u);
     }
 private:
-    GraphMetrics graphMetrics;
     const int numPoints = 41;
+
+    GraphMetrics graphMetrics;
     double dx;
-    std::vector<double> ys;
+    std::vector<double> u;
 };

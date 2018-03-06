@@ -23,38 +23,42 @@ public:
 
         dx = (graphMetrics.maxX - graphMetrics.minX) / (numPoints - 1);
 
-        ys.resize(numPoints);
+        u = std::vector<double>(numPoints);
 
-        const auto sigma = 0.2f;
         fixedTimeStep = sigma * (dx * dx);
 
         // apply initial condition
-        for(size_t i = 0; i < ys.size(); i++)
+        for(size_t i = 0; i < numPoints; i++)
         {
             const auto x = graphMetrics.minX + (i * dx);
-            ys[i] = ((x >= 0.5f) && (x <= 1)) ? 2.0f : 1.0f;
+            u[i] = ((x >= 0.5f) && (x <= 1)) ? 2.0f : 1.0f;
         }
     }
     void update(const double dt)
     {
-        const auto timeScale = 1.0 / 10;
-        const auto nu = 0.3f; // viscosity
-        auto newYs = ys;
+        const auto scaledDt = timeScale * dt;
+        auto newU = u;
 
-        for(size_t i = 1; i < ys.size() - 1; i++)
+        for(size_t i = 1; i < numPoints - 1; i++)
         {
-            newYs[i] = ys[i] + (nu * ((timeScale * dt) / (dx * dx)) * (ys[i + 1] - (2 * ys[i]) + ys[i - 1]));
+            const auto d2udx2 = gradient2ndOrderCentralDiff(u, i, dx);
+            const auto dudt = nu * d2udx2;
+            newU[i] = u[i] + (scaledDt * dudt);
         }
 
-        ys = newYs;
+        u = newU;
     }
     void draw(SDL_Renderer* renderer)
     {
-        renderLineGraph(renderer, graphMetrics, graphMetrics.minX, dx, ys);
+        renderLineGraph(renderer, graphMetrics, graphMetrics.minX, dx, u);
     }
 private:
-    GraphMetrics graphMetrics;
     const int numPoints = 41;
+    const double sigma = 0.2;
+    const double nu = 0.3; // viscosity
+    const double timeScale = 1.0 / 10;
+
+    GraphMetrics graphMetrics;
     double dx;
-    std::vector<double> ys;
+    std::vector<double> u;
 };
