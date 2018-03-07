@@ -132,6 +132,7 @@
     <ClInclude Include="..\..\..\src\GraphMetrics.h" />
     <ClInclude Include="..\..\..\src\LinearAlgebra.h" />
     <ClInclude Include="..\..\..\src\Render.h" />
+    <ClInclude Include="..\..\..\src\Step.h" />
     <ClInclude Include="..\..\..\src\Step1.h" />
     <ClInclude Include="..\..\..\src\Step10.h" />
     <ClInclude Include="..\..\..\src\Step11.h" />

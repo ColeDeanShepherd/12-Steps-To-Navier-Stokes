@@ -6,14 +6,15 @@
 #include "GraphMetrics.h"
 #include "FiniteDifference.h"
 #include "Render.h"
+#include "Step.h"
 
-class Step2NonlinearConvection1D
+class Step2NonlinearConvection1D : public Step
 {
 public:
-    const double fixedTimeStep = 1.0 / 60.0;
-
     Step2NonlinearConvection1D()
     {
+        fixedTimeStep = 1.0 / 60.0;
+
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
         graphMetrics.pos = Vector2d(10, 10);

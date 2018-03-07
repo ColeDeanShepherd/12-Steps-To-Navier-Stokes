@@ -5,12 +5,11 @@
 #include "GraphMetrics.h"
 #include "FiniteDifference.h"
 #include "Render.h"
+#include "Step.h"
 
-class Step3Diffusion1D
+class Step3Diffusion1D : public Step
 {
 public:
-    double fixedTimeStep;
-
     Step3Diffusion1D()
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
@@ -23,9 +22,9 @@ public:
 
         dx = (graphMetrics.maxX - graphMetrics.minX) / (numPoints - 1);
 
-        u = std::vector<double>(numPoints);
-
         fixedTimeStep = sigma * (dx * dx);
+
+        u = std::vector<double>(numPoints);
 
         // apply initial condition
         for(size_t i = 0; i < numPoints; i++)

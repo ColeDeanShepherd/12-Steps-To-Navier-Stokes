@@ -6,14 +6,15 @@
 #include "GraphMetrics.h"
 #include "FiniteDifference.h"
 #include "Render.h"
+#include "Step.h"
 
-class Step9LaplaceEquation2D
+class Step9LaplaceEquation2D : public Step
 {
 public:
-    double fixedTimeStep;
-
     Step9LaplaceEquation2D()
     {
+        fixedTimeStep = 1.0 / 60;
+
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
         graphMetrics.pos = Vector2d(10, 10);
@@ -25,55 +26,41 @@ public:
         dx = (graphMetrics.maxX - graphMetrics.minX) / (numX - 1);
         dy = (graphMetrics.maxY - graphMetrics.minY) / (numY - 1);
 
-        fixedTimeStep = 1.0 / 60;
-
-        initForFunction(p, &heightMap);
+        applyInitialConditions();
+        heightMap = NULL;
     }
-    void initForFunction(std::vector<std::vector<double>>& heights, SDL_Texture** heightMap)
+    void applyInitialConditions()
     {
-        heights = std::vector<std::vector<double>>(numY, std::vector<double>(numX));
+        p = std::vector<std::vector<double>>(numX, std::vector<double>(numY));
 
         // apply initial condition
-        for(size_t rowIndex = 0; rowIndex < heights.size(); rowIndex++)
+        for(size_t i = 0; i < numX; i++)
         {
-            for(size_t columnIndex = 0; columnIndex < heights[rowIndex].size(); columnIndex++)
+            for(size_t j = 0; j < numY; j++)
             {
-                heights[rowIndex][columnIndex] = 0;
+                p[i][j] = 0;
             }
         }
-
-        heightMap = NULL;
     }
     void applyBoundaryConditions(std::vector<std::vector<double>>& p)
     {
         const double bCVal = 1;
 
-        // p = 0 at x = 0
         for(size_t i = 0; i < numY; i++)
         {
-            p[i][0] = 0;
-        }
+            p[0][i] = 0; // p = 0 at x = 0
 
-        // p = y at x = 2
-        for(size_t i = 0; i < numY; i++)
-        {
             const auto y = graphMetrics.minY + (i * dy);
-            p[i][numX - 1] = y;
+            p[numX - 1][i] = y; // p = y at x = 2
         }
 
-        // dp/dy = 0 at y = 0
         for(size_t i = 0; i < numX; i++)
         {
-            p[0][i] = p[1][i];
-        }
-
-        // dp/dy = 0 at y = 1
-        for(size_t i = 0; i < numX; i++)
-        {
-            p[numY - 1][i] = p[numY - 2][i];
+            p[i][0] = p[i][1]; // dp/dy = 0 at y = 0
+            p[i][numY - 1] = p[i][numY - 2]; // dp/dy = 0 at y = 1
         }
     }
-    void update(std::vector<std::vector<double>>& p, const double dt)
+    void update(const double dt)
     {
         const auto dx2 = dx * dx;
         const auto dy2 = dy * dy;
@@ -92,38 +79,6 @@ public:
         applyBoundaryConditions(newP);
         p = newP;
     }
-    void update(const double dt)
-    {
-        update(p, dt);
-    }
-    void updateHeightmap(const std::vector<std::vector<double>>& heights, SDL_Texture* heightMap)
-    {
-        unsigned char* pixelBytes;
-        int pitch;
-        const auto failedLocking = SDL_LockTexture(heightMap, NULL, (void**)&pixelBytes, &pitch) != 0;
-
-        if(failedLocking)
-        {
-            throw new std::exception("Failed locking the texture.");
-        }
-
-        for(auto rowIndex = 0; rowIndex < numY; rowIndex++)
-        {
-            for(auto columnIndex = 0; columnIndex < numX; columnIndex++)
-            {
-                const auto pixelBytesOffset = (rowIndex * pitch) + (4 * columnIndex);
-                const auto pixelValuePercent = heights[rowIndex][columnIndex] / graphMaxHeight;
-                const auto pixelValue = (unsigned char)(255 * pixelValuePercent);
-
-                pixelBytes[pixelBytesOffset + 3] = pixelValue; // R
-                pixelBytes[pixelBytesOffset + 2] = pixelValue; // G
-                pixelBytes[pixelBytesOffset + 1] = pixelValue; // B
-                pixelBytes[pixelBytesOffset + 0] = 255; // A
-            }
-        }
-
-        SDL_UnlockTexture(heightMap);
-    }
     void draw(SDL_Renderer* renderer)
     {
         if(heightMap == NULL)
@@ -131,7 +86,7 @@ public:
             heightMap = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, numX, numY);
         }
 
-        updateHeightmap(p, heightMap);
+        updateHeightmap(heightMap, numX, numY, p, 0, graphMaxHeight);
 
         SDL_Rect uGraphRect;
         uGraphRect.w = (int)graphMetrics.width;
@@ -142,10 +97,11 @@ public:
         SDL_RenderCopy(renderer, heightMap, NULL, &uGraphRect);
     }
 private:
-    GraphMetrics graphMetrics;
     const int numX = 31;
     const int numY = 31;
     const double graphMaxHeight = 1;
+
+    GraphMetrics graphMetrics;
     double dx;
     double dy;
     std::vector<std::vector<double>> p;

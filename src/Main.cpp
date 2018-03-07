@@ -2,8 +2,10 @@
 #include <math.h>
 #include <sstream>
 #include <SDL.h>
+#include <memory>
 
 #include "Core.h"
+#include "Step.h"
 #include "Step1.h"
 #include "Step2.h"
 #include "Step3.h"
@@ -29,18 +31,20 @@ int main(int argc, char* argv[])
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
 
-    //Step1LinearConvection1D step;
-    //Step2NonlinearConvection1D step;
-    //Step3Diffusion1D step;
-    //Step4BurgersEquation1D step;
-    //Step5LinearConvection2D step;
-    //Step6NonlinearConvection2D step;
-    //Step7Diffusion2D step;
-    //Step8BurgersEquation2D step;
-    //Step9LaplaceEquation2D step;
-    //Step10PoissonEquation2D step;
-    Step11CavityFlow step;
-    //Step12ChannelFlow step;
+    std::unique_ptr<Step> step;
+    
+    //step.reset(new Step1LinearConvection1D());
+    //step.reset(new Step2NonlinearConvection1D());
+    //step.reset(new Step3Diffusion1D());
+    //step.reset(new Step4BurgersEquation1D());
+    //step.reset(new Step5LinearConvection2D());
+    //step.reset(new Step6NonlinearConvection2D());
+    //step.reset(new Step7Diffusion2D());
+    //step.reset(new Step8BurgersEquation2D());
+    //step.reset(new Step9LaplaceEquation2D());
+    //step.reset(new Step10PoissonEquation2D());
+    //step.reset(new Step11CavityFlow());
+    step.reset(new Step12ChannelFlow());
 
     auto lastPerfCount = SDL_GetPerformanceCounter();
     double accumulatedTime = 0;
@@ -65,10 +69,10 @@ int main(int argc, char* argv[])
 
         // update
         auto updatesThisFrame = 0;
-        while((updatesThisFrame < maxUpdatesPerFrame) && (accumulatedTime >= step.fixedTimeStep))
+        while((updatesThisFrame < maxUpdatesPerFrame) && (accumulatedTime >= step->fixedTimeStep))
         {
-            step.update(step.fixedTimeStep);
-            accumulatedTime -= step.fixedTimeStep;
+            step->update(step->fixedTimeStep);
+            accumulatedTime -= step->fixedTimeStep;
 
             updatesThisFrame++;
         }
@@ -77,7 +81,7 @@ int main(int argc, char* argv[])
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
-        step.draw(renderer);
+        step->draw(renderer);
 
         // render window
         SDL_RenderPresent(renderer);

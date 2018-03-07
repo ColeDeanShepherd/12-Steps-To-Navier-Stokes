@@ -5,12 +5,11 @@
 #include "GraphMetrics.h"
 #include "FiniteDifference.h"
 #include "Render.h"
+#include "Step.h"
 
-class Step4BurgersEquation1D
+class Step4BurgersEquation1D : public Step
 {
 public:
-    double fixedTimeStep;
-
     Step4BurgersEquation1D()
     {
         graphMetrics.width = WINDOW_WIDTH - 20;
@@ -23,8 +22,9 @@ public:
 
         dx = (graphMetrics.maxX - graphMetrics.minX) / (numPoints - 1);
 
-        u.resize(numPoints);
         fixedTimeStep = dx * nu;
+
+        u.resize(numPoints);
 
         // apply initial condition
         const auto icNu = 0.3; // viscosity
