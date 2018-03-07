@@ -52,8 +52,8 @@ void updateHeightmap(
 }
 
 void renderVectorField(
-    SDL_Renderer* renderer, const std::vector<std::vector<Vector2d>>& v,
-    const GraphMetrics& graphMetrics, const size_t numX, const size_t numY, const double vScale)
+    SDL_Renderer* renderer, const std::vector<std::vector<Vector2d>>& v, const GraphMetrics& graphMetrics,
+    const size_t numX, const size_t numY, const double vScale, const double maxVNorm = -1)
 {
     for(size_t i = 0; i < numX; i++)
     {
@@ -62,7 +62,9 @@ void renderVectorField(
             const auto pixelWidth = (graphMetrics.maxX - graphMetrics.minX) / numX;
             const auto pixelHeight = (graphMetrics.maxY - graphMetrics.minY) / numY;
 
-            const auto arrow = withMaxNorm(vScale * v[i][j], (3.0 / 4.0) * pixelHeight);
+            const auto arrow = (maxVNorm > 0)
+                ? withMaxNorm(vScale * v[i][j], maxVNorm)
+                : (vScale * v[i][j]);
             const auto velocityTailGraphPos = Vector2d(
                 graphMetrics.minX + (i * pixelWidth) + (pixelWidth / 2),
                 graphMetrics.minY + (j * pixelHeight) + (pixelHeight / 2));

@@ -27,30 +27,12 @@ public:
         dx = (graphMetrics.maxX - graphMetrics.minX) / (numX - 1);
         dy = (graphMetrics.maxY - graphMetrics.minY) / (numY - 1);
 
-        b = zeros(numX, numY);
         p = zeros(numX, numY);
-        fv = std::vector<std::vector<Vector2d>>(numX, std::vector<Vector2d>(numY, Vector2d(0, 0)));
+        v = std::vector<std::vector<Vector2d>>(numX, std::vector<Vector2d>(numY, Vector2d(0, 0)));
 
         heightMap = NULL;
     }
 
-    void buildUpB(const double dt)
-    {
-        for(size_t i = 1; i < numX - 1; i++)
-        {
-            for(size_t j = 1; j < numY - 1; j++)
-            {
-                const auto term1 = (1.0 / dt) * divergence1stOrderBackwardDiff(fv, i, j, dx, dy);
-                const auto term2 = pow((fv[i + 1][j].x - fv[i - 1][j].x) / (2 * dx), 2);
-                const auto term3 = 2 *
-                    ((fv[i][j + 1].x - fv[i][j - 1].x) / (2 * dy)) *
-                    ((fv[i + 1][j].y - fv[i - 1][j].y) / (2 * dx));
-                const auto term4 = pow((fv[i][j + 1].y - fv[i][j - 1].y) / (2 * dy), 2);
-
-                b[i][j] = rho * (term1 - term2 - term3 - term4);
-            }
-        }
-    }
     void applyPBoundaryConditions()
     {
         // dp/dy = 0 at y = 0
@@ -79,7 +61,7 @@ public:
     {
         for(size_t iter = 0; iter < numPIterations; iter++)
         {
-            buildUpB(dt);
+            const auto b = getBForIncompressibleNavierStokes(v, rho, numX, numY, dx, dy, dt);
             p = iteratePoissonsEquation(p, b, numX, numY, dx, dy);
             applyPBoundaryConditions();
         }
@@ -90,38 +72,38 @@ public:
         // v = 0 at boundaries
         for(size_t i = 0; i < numX; i++)
         {
-            fv[0][i] = Vector2d(0, 0); // v = 0 at x = 0
-            fv[numX - 1][i] = Vector2d(0, 0); // v = 0 at x = 2
-            fv[i][0] = Vector2d(0, 0); // v = 0 at y = 0
-            fv[i][numY - 1] = Vector2d(0, 0); // v = 0 at y = 2
+            v[0][i] = Vector2d(0, 0); // v = 0 at x = 0
+            v[numX - 1][i] = Vector2d(0, 0); // v = 0 at x = 2
+            v[i][0] = Vector2d(0, 0); // v = 0 at y = 0
+            v[i][numY - 1] = Vector2d(0, 0); // v = 0 at y = 2
         }
 
         // vx = 1 at y = 2
         for(size_t i = 0; i < numX; i++)
         {
-            fv[i][numY - 1].x = 1;
+            v[i][numY - 1].x = 1;
         }
     }
     void updateFlowVelocity(const double dt)
     {
-        auto newFv = fv;
+        auto newFv = v;
         for(size_t i = 1; i < numX - 1; i++)
         {
             for(size_t j = 1; j < numY - 1; j++)
             {
-                const auto divergenceOfV = divergence1stOrderBackwardDiff(fv, i, j, dx, dy);
+                const auto divergenceOfV = divergence1stOrderBackwardDiff(v, i, j, dx, dy);
                 const auto gradientOfP = gradient1stOrderCentralDiff(p, i, j, dx, dy);
-                const auto laplacianOfV = laplacian2ndOrderCentralDiff(fv, i, j, dx, dy);
+                const auto laplacianOfV = laplacian2ndOrderCentralDiff(v, i, j, dx, dy);
 
-                const auto dfvdt = -(divergenceOfV * fv[i][j])
+                const auto dfvdt = -(divergenceOfV * v[i][j])
                     - ((1.0 / rho) * gradientOfP)
                     + (nu * laplacianOfV);
 
-                newFv[i][j] = fv[i][j] + (dt * (dfvdt));
+                newFv[i][j] = v[i][j] + (dt * (dfvdt));
             }
         }
 
-        fv = newFv;
+        v = newFv;
 
         applyFlowVelocityBoundaryConditions();
     }
@@ -151,7 +133,9 @@ public:
 
         SDL_RenderCopy(renderer, heightMap, NULL, &graphRect);
 
-        renderVectorField(renderer, fv, graphMetrics, numX, numY, 1);
+        const auto pixelHeight = (graphMetrics.maxY - graphMetrics.minY) / numY;
+        const auto maxVNorm = (3.0 / 4.0) * pixelHeight;
+        renderVectorField(renderer, v, graphMetrics, numX, numY, 1, maxVNorm);
     }
 private:
     const int numX = 41;
@@ -167,8 +151,7 @@ private:
     GraphMetrics graphMetrics;
     double dx;
     double dy;
-    std::vector<std::vector<Vector2d>> fv;
+    std::vector<std::vector<Vector2d>> v;
     std::vector<std::vector<double>> p;
-    std::vector<std::vector<double>> b;
     SDL_Texture* heightMap;
 };

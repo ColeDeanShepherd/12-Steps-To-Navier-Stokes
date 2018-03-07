@@ -90,3 +90,27 @@ std::vector<std::vector<double>> iteratePoissonsEquation(
 
     return newP;
 }
+
+std::vector<std::vector<double>> getBForIncompressibleNavierStokes(
+    const std::vector<std::vector<Vector2d>>& v, const double rho,
+    const size_t numX, const size_t numY, const double dx, const double dy, const double dt)
+{
+    std::vector<std::vector<double>> b(numX, std::vector<double>(numY));
+
+    for(size_t i = 1; i < numX - 1; i++)
+    {
+        for(size_t j = 1; j < numY - 1; j++)
+        {
+            const auto term1 = (1.0 / dt) * divergence1stOrderBackwardDiff(v, i, j, dx, dy);
+            const auto term2 = pow((v[i + 1][j].x - v[i - 1][j].x) / (2 * dx), 2);
+            const auto term3 = 2 *
+                ((v[i][j + 1].x - v[i][j - 1].x) / (2 * dy)) *
+                ((v[i + 1][j].y - v[i - 1][j].y) / (2 * dx));
+            const auto term4 = pow((v[i][j + 1].y - v[i][j - 1].y) / (2 * dy), 2);
+
+            b[i][j] = rho * (term1 - term2 - term3 - term4);
+        }
+    }
+
+    return b;
+}
