@@ -124,7 +124,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\Core.cpp" />
+    <ClCompile Include="..\..\..\src\FiniteDifference.cpp" />
+    <ClCompile Include="..\..\..\src\GraphMetrics.cpp" />
+    <ClCompile Include="..\..\..\src\LinearAlgebra.cpp" />
     <ClCompile Include="..\..\..\src\Main.cpp" />
+    <ClCompile Include="..\..\..\src\Render.cpp" />
+    <ClCompile Include="..\..\..\src\Step1.cpp" />
+    <ClCompile Include="..\..\..\src\Step10.cpp" />
+    <ClCompile Include="..\..\..\src\Step11.cpp" />
+    <ClCompile Include="..\..\..\src\Step12.cpp" />
+    <ClCompile Include="..\..\..\src\Step2.cpp" />
+    <ClCompile Include="..\..\..\src\Step3.cpp" />
+    <ClCompile Include="..\..\..\src\Step4.cpp" />
+    <ClCompile Include="..\..\..\src\Step5.cpp" />
+    <ClCompile Include="..\..\..\src\Step6.cpp" />
+    <ClCompile Include="..\..\..\src\Step7.cpp" />
+    <ClCompile Include="..\..\..\src\Step8.cpp" />
+    <ClCompile Include="..\..\..\src\Step9.cpp" />
+    <ClCompile Include="..\..\..\src\Vector2d.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\Core.h" />

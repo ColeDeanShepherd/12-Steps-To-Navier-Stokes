@@ -8,32 +8,19 @@ namespace std
         if(value < min)
         {
             return min;
-        } else if(value > max)
+        }
+        else if(value > max)
         {
             return max;
-        } else
+        }
+        else
         {
             return value;
         }
     }
 }
 
-int wrap(int value, int minValue, int maxValue)
-{
-    const auto numPossibleValues = (maxValue - minValue) + 1;
-
-    while(value < minValue)
-    {
-        value += numPossibleValues;
-    }
-
-    while(value > maxValue)
-    {
-        value -= numPossibleValues;
-    }
-
-    return value;
-}
+int wrap(int value, int minValue, int maxValue);
 
 const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
