@@ -1,4 +1,5 @@
 #include <vector>
+#include <SDL.h>
 #include "Vector2d.h"
 #include "GraphMetrics.h"
 #include "FiniteDifference.h"

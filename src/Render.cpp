@@ -1,3 +1,4 @@
+#include <SDL.h>
 #include "Render.h"
 
 void renderLineGraph(SDL_Renderer* renderer, const GraphMetrics& graphMetrics, const double x0, const double dx, const std::vector<double>& ys)

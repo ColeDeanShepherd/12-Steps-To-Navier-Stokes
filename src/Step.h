@@ -1,7 +1,8 @@
 #pragma once
 
 #include <string>
-#include <SDL.h>
+
+struct SDL_Renderer;
 
 class Step
 {

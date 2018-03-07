@@ -1,9 +1,11 @@
 #pragma once
 
 #include <vector>
-#include <SDL.h>
 #include "Core.h"
 #include "GraphMetrics.h"
+
+struct SDL_Renderer;
+struct SDL_Texture;
 
 void renderLineGraph(SDL_Renderer* renderer, const GraphMetrics& graphMetrics, const double x0, const double dx, const std::vector<double>& ys);
 
