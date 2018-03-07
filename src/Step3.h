@@ -12,6 +12,8 @@ class Step3Diffusion1D : public Step
 public:
     Step3Diffusion1D()
     {
+        title = "Step 3: Diffusion";
+
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
         graphMetrics.pos = Vector2d(10, 10);

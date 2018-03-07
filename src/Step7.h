@@ -13,6 +13,8 @@ class Step7Diffusion2D : public Step
 public:
     Step7Diffusion2D()
     {
+        title = "Step 7: 2D Diffusion";
+
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
         graphMetrics.pos = Vector2d(10, 10);

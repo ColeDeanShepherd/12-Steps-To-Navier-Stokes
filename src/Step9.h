@@ -13,6 +13,8 @@ class Step9LaplaceEquation2D : public Step
 public:
     Step9LaplaceEquation2D()
     {
+        title = "Step 9: Laplace Equation";
+
         fixedTimeStep = 1.0 / 60;
 
         graphMetrics.width = WINDOW_WIDTH - 20;

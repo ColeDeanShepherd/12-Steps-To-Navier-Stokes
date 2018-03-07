@@ -14,6 +14,8 @@ class Step12ChannelFlow : public Step
 public:
     Step12ChannelFlow()
     {
+        title = "Step 12: Channel Flow";
+
         fixedTimeStep = 1.0 / 60.0;
 
         graphMetrics.width = WINDOW_WIDTH - 20;

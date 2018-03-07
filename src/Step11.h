@@ -14,6 +14,8 @@ class Step11CavityFlow : public Step
 public:
     Step11CavityFlow()
     {
+        title = "Step 11: Cavity Flow";
+
         fixedTimeStep = 1.0 / 60.0;
 
         graphMetrics.width = WINDOW_WIDTH - 20;

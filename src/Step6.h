@@ -12,6 +12,8 @@ class Step6NonlinearConvection2D : public Step
 public:
     Step6NonlinearConvection2D()
     {
+        title = "Step 6: 2D Nonlinear Convection";
+
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
         graphMetrics.pos = Vector2d(10, 10);

@@ -14,6 +14,8 @@ class Step10PoissonEquation2D : public Step
 public:
     Step10PoissonEquation2D()
     {
+        title = "Step 10: Poisson Equation";
+
         fixedTimeStep = 1.0 / 60;
 
         graphMetrics.width = WINDOW_WIDTH - 20;

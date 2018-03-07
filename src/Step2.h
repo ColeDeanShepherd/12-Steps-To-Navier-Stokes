@@ -13,6 +13,8 @@ class Step2NonlinearConvection1D : public Step
 public:
     Step2NonlinearConvection1D()
     {
+        title = "Step 2: Nonlinear Convection";
+
         fixedTimeStep = 1.0 / 60.0;
 
         graphMetrics.width = WINDOW_WIDTH - 20;

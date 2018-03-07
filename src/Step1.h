@@ -13,6 +13,8 @@ class Step1LinearConvection1D : public Step
 public:
     Step1LinearConvection1D()
     {
+        title = "Step 1: Linear Convection";
+
         fixedTimeStep = 1.0 / 60.0;
 
         graphMetrics.width = WINDOW_WIDTH - 20;

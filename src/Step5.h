@@ -12,6 +12,8 @@ class Step5LinearConvection2D : public Step
 public:
     Step5LinearConvection2D()
     {
+        title = "Step 5: 2D Linear Convection";
+
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
         graphMetrics.pos = Vector2d(10, 10);

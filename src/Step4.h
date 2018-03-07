@@ -12,6 +12,8 @@ class Step4BurgersEquation1D : public Step
 public:
     Step4BurgersEquation1D()
     {
+        title = "Step 4: Burgers' Equation";
+
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
         graphMetrics.pos = Vector2d(10, 10);

@@ -13,6 +13,8 @@ class Step8BurgersEquation2D : public Step
 public:
     Step8BurgersEquation2D()
     {
+        title = "Step 8: Burgers' Equation";
+
         graphMetrics.width = WINDOW_WIDTH - 20;
         graphMetrics.height = WINDOW_HEIGHT - 20;
         graphMetrics.pos = Vector2d(10, 10);
