@@ -21,7 +21,9 @@ Vector2d operator - (const Vector2d& a, const Vector2d& b);
 
 double dot(const Vector2d& a, const Vector2d& b);
 double norm(const Vector2d& v);
+
 Vector2d div(const Vector2d& v, const double d);
+Vector2d operator / (const Vector2d& v, const double d);
 
 Vector2d mul(const double s, const Vector2d& v);
 Vector2d operator * (const double s, const Vector2d& v);

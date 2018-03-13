@@ -39,6 +39,10 @@ Vector2d div(const Vector2d& v, const double d)
 {
     return Vector2d(v.x / d, v.y / d);
 }
+Vector2d operator / (const Vector2d& v, const double d)
+{
+    return div(v, d);
+}
 
 Vector2d mul(const double s, const Vector2d& v)
 {

@@ -68,25 +68,27 @@ void Step12ChannelFlow::applyFlowVelocityBoundaryConditions()
 }
 void Step12ChannelFlow::updateFlowVelocity(const double dt)
 {
-    auto newFv = v;
+    auto newV = v;
     for(size_t i = 1; i < (numX + 1); i++)
     {
         for(size_t j = 1; j < (numY - 1); j++)
         {
-            const auto divergenceOfV = divergence1stOrderBackwardDiff(v, i, j, dx, dy);
+            const auto dvdx = (v[i][j] - v[i - 1][j]) / dx;
+            const auto dvdy = (v[i][j] - v[i][j - 1]) / dy;
+            const auto convectiveTerm = (v[i][j].x * dvdx) + (v[i][j].y * dvdy);
             const auto gradientOfP = gradient1stOrderCentralDiff(p, i, j, dx, dy);
             const auto laplacianOfV = laplacian2ndOrderCentralDiff(v, i, j, dx, dy);
 
-            const auto dfvdt = -(divergenceOfV * v[i][j])
+            const auto dvdt = -convectiveTerm
                 - ((1.0 / rho) * gradientOfP)
                 + (nu * laplacianOfV)
                 + f[i][j];
 
-            newFv[i][j] = v[i][j] + (dt * (dfvdt));
+            newV[i][j] = v[i][j] + (dt * (dvdt));
         }
     }
 
-    v = newFv;
+    v = newV;
 
     applyFlowVelocityBoundaryConditions();
 }
