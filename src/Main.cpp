@@ -50,7 +50,7 @@ std::unique_ptr<Step> createStep(int stepNumber)
     case 12:
         return std::unique_ptr<Step>(new Step12ChannelFlow());
     default:
-        throw std::exception("Invalid step number.");
+        throw std::runtime_error("Invalid step number.");
     }
 }
 int wrapStepNumber(int stepNumber)

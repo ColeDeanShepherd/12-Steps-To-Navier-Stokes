@@ -27,7 +27,7 @@ void updateHeightmap(
 
     if(failedLocking)
     {
-        throw new std::exception("Failed locking the texture.");
+        throw new std::runtime_error("Failed locking the texture.");
     }
 
     // pixels go from top to bottom, left to right
