@@ -13,8 +13,8 @@ public:
     void update(const double dt);
     void draw(SDL_Renderer* renderer);
 private:
-    const int numX = 31;
-    const int numY = 31;
+    const unsigned int numX = 31;
+    const unsigned int numY = 31;
     const double graphMaxHeight = 1;
 
     GraphMetrics graphMetrics;

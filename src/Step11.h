@@ -19,10 +19,10 @@ public:
 
     void draw(SDL_Renderer* renderer);
 private:
-    const int numX = 41;
-    const int numY = 41;
+    const unsigned int numX = 41;
+    const unsigned int numY = 41;
     const double timeScale = 0.006;
-    const int numPIterations = 50;
+    const unsigned int numPIterations = 50;
     const double c = 1;
     const double rho = 1;
     const double nu = 0.1;

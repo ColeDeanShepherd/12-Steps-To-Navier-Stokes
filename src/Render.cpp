@@ -5,7 +5,7 @@ void renderLineGraph(SDL_Renderer* renderer, const GraphMetrics& graphMetrics, c
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
-    for(auto i = 0; i < ys.size() - 1; i++)
+    for(size_t i = 0; i < ys.size() - 1; i++)
     {
         const auto graphPoint0 = Vector2d(x0 + (i * dx), ys[i]);
         const auto pixelPoint0 = graphPointToPxPoint(graphMetrics, graphPoint0);
@@ -31,9 +31,9 @@ void updateHeightmap(
     }
 
     // pixels go from top to bottom, left to right
-    for(auto pixelRowIndex = 0; pixelRowIndex < height; pixelRowIndex++)
+    for(size_t pixelRowIndex = 0; pixelRowIndex < height; pixelRowIndex++)
     {
-        for(auto pixelColumnIndex = 0; pixelColumnIndex < width; pixelColumnIndex++)
+        for(size_t pixelColumnIndex = 0; pixelColumnIndex < width; pixelColumnIndex++)
         {
             const auto pixelBytesOffset = (pitch * pixelRowIndex) + (4 * pixelColumnIndex);
 
@@ -75,12 +75,12 @@ void renderVectorField(
 
             SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
             SDL_RenderDrawLine(
-                renderer, velocityTailPxPos.x, velocityTailPxPos.y,
-                velocityHeadPxPos.x, velocityHeadPxPos.y
+                renderer, (int)velocityTailPxPos.x, (int)velocityTailPxPos.y,
+                (int)velocityHeadPxPos.x, (int)velocityHeadPxPos.y
             );
 
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            SDL_RenderDrawPoint(renderer, velocityHeadPxPos.x, velocityHeadPxPos.y);
+            SDL_RenderDrawPoint(renderer, (int)velocityHeadPxPos.x, (int)velocityHeadPxPos.y);
         }
     }
 }

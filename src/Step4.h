@@ -11,7 +11,7 @@ public:
     void update(const double dt);
     void draw(SDL_Renderer* renderer);
 private:
-    const int numPoints = 101;
+    const unsigned int numPoints = 101;
     const double nu = 0.07; // viscosity
     const double timeScale = 1.0 / 4;
 

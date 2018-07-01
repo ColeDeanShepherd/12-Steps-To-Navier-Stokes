@@ -17,8 +17,8 @@ private:
     const double timeScale = 0.1;
     const double c = 1.0;
     const double sigma = 0.2;
-    const int numX = 81;
-    const int numY = 81;
+    const unsigned int numX = 81;
+    const unsigned int numY = 81;
     
     GraphMetrics graphMetrics;
     double dx;

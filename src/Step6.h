@@ -13,8 +13,8 @@ public:
     void update(const double dt);
     void draw(SDL_Renderer* renderer);
 private:
-    const int numX = 81;
-    const int numY = 81;
+    const unsigned int numX = 81;
+    const unsigned int numY = 81;
     const double graphMaxHeight = 2;
     const double timeScale = 0.1;
     const double c = 1.0;

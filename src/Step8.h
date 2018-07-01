@@ -20,8 +20,8 @@ private:
     const double sigma = 0.0009;
 
     GraphMetrics graphMetrics;
-    const int numX = 41;
-    const int numY = 41;
+    const unsigned int numX = 41;
+    const unsigned int numY = 41;
     double dx;
     double dy;
     std::vector<std::vector<Vector2d>> v;

@@ -12,8 +12,8 @@ public:
     void update(const double dt);
     void draw(SDL_Renderer* renderer);
 private:
-    const int numX = 50;
-    const int numY = 50;
+    const unsigned int numX = 50;
+    const unsigned int numY = 50;
     const double graphMinHeight = -0.06;
     const double graphMaxHeight = 0.06;
 
