@@ -1,8 +1,12 @@
-#include <vector>
 #include <math.h>
-#include <sstream>
-#include <SDL.h>
 #include <memory>
+#include <sstream>
+#include <vector>
+#include <SDL.h>
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 #include "Core.h"
 #include "Step.h"
@@ -57,78 +61,94 @@ int wrapStepNumber(int stepNumber)
 {
     return ((stepNumber - 1) % 12) + 1;
 }
+
+bool quit;
+Uint64 lastPerfCount;
+double accumulatedTime;
+int stepNumber = 1;
+std::unique_ptr<Step> step;
+SDL_Window* window;
+SDL_Renderer* renderer;
+
+void changeStep(int newStepNumber)
+{
+    stepNumber = newStepNumber;
+    step = createStep(stepNumber);
+    SDL_SetWindowTitle(window, step->title.c_str());
+};
+void runFrame()
+{
+    // update timing
+    const auto curPerfCount = SDL_GetPerformanceCounter();
+    const double dt = (double)(curPerfCount - lastPerfCount) / SDL_GetPerformanceFrequency();
+    accumulatedTime += dt;
+    lastPerfCount = curPerfCount;
+
+    // handle events
+    SDL_Event event;
+    while(SDL_PollEvent(&event))
+    {
+        if(event.type == SDL_QUIT)
+        {
+            quit = true;
+        }
+        else if(event.type == SDL_KEYDOWN)
+        {
+            if(event.key.keysym.sym == SDLK_LEFT)
+            {
+                changeStep(wrap(stepNumber - 1, 1, 12));
+            }
+            else if(event.key.keysym.sym == SDLK_RIGHT)
+            {
+                changeStep(wrap(stepNumber + 1, 1, 12));
+            }
+        }
+    }
+
+    // update
+    auto updatesThisFrame = 0;
+    while((updatesThisFrame < maxUpdatesPerFrame) && (accumulatedTime >= step->fixedTimeStep))
+    {
+        step->update(step->fixedTimeStep);
+        accumulatedTime -= step->fixedTimeStep;
+
+        updatesThisFrame++;
+    }
+
+    // clear window
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+
+    step->draw(renderer);
+
+    // render window
+    SDL_RenderPresent(renderer);
+}
 int main(int argc, char* argv[])
 {
-    bool quit = false;
+    quit = false;
     
     // init SDL
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_Window* window = SDL_CreateWindow("12 Steps to Navier-Stokes",
+    window = SDL_CreateWindow("12 Steps to Navier-Stokes",
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+    renderer = SDL_CreateRenderer(window, -1, 0);
 
-    auto stepNumber = 1;
-    std::unique_ptr<Step> step;
-
-    const auto changeStep = [&stepNumber, &step, window] (int newStepNumber) {
-        stepNumber = newStepNumber;
-        step = createStep(stepNumber);
-        SDL_SetWindowTitle(window, step->title.c_str());
-    };
+    stepNumber = 1;
 
     changeStep(stepNumber);
 
-    auto lastPerfCount = SDL_GetPerformanceCounter();
-    double accumulatedTime = 0;
+    lastPerfCount = SDL_GetPerformanceCounter();
+    accumulatedTime = 0;
 
+#ifndef __EMSCRIPTEN__
     while(!quit)
     {
-        // update timing
-        const auto curPerfCount = SDL_GetPerformanceCounter();
-        const double dt = (double)(curPerfCount - lastPerfCount) / SDL_GetPerformanceFrequency();
-        accumulatedTime += dt;
-        lastPerfCount = curPerfCount;
-
-        // handle events
-        SDL_Event event;
-        while(SDL_PollEvent(&event))
-        {
-            if(event.type == SDL_QUIT)
-            {
-                quit = true;
-            }
-            else if(event.type == SDL_KEYDOWN)
-            {
-                if(event.key.keysym.sym == SDLK_LEFT)
-                {
-                    changeStep(wrap(stepNumber - 1, 1, 12));
-                }
-                else if(event.key.keysym.sym == SDLK_RIGHT)
-                {
-                    changeStep(wrap(stepNumber + 1, 1, 12));
-                }
-            }
-        }
-
-        // update
-        auto updatesThisFrame = 0;
-        while((updatesThisFrame < maxUpdatesPerFrame) && (accumulatedTime >= step->fixedTimeStep))
-        {
-            step->update(step->fixedTimeStep);
-            accumulatedTime -= step->fixedTimeStep;
-
-            updatesThisFrame++;
-        }
-
-        // clear window
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderClear(renderer);
-
-        step->draw(renderer);
-
-        // render window
-        SDL_RenderPresent(renderer);
+        runFrame();
     }
+#else
+    emscripten_set_main_loop(runFrame, 0, 1);
+#endif
 
     // cleanup SDL
     SDL_DestroyRenderer(renderer);
