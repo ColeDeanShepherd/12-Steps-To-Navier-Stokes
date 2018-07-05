@@ -7,7 +7,7 @@
 class Step12ChannelFlow : public Step
 {
 public:
-    Step12ChannelFlow();
+    Step12ChannelFlow(const int windowWidth, const int windowHeight);
 
     void applyPBoundaryConditions();
     void updateP(const double dt);

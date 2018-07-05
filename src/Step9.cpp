@@ -7,14 +7,14 @@
 #include "Render.h"
 #include "Step9.h"
 
-Step9LaplaceEquation2D::Step9LaplaceEquation2D()
+Step9LaplaceEquation2D::Step9LaplaceEquation2D(const int windowWidth, const int windowHeight)
 {
     title = "Step 9: Laplace Equation";
 
     fixedTimeStep = 1.0 / 60;
 
-    graphMetrics.width = WINDOW_WIDTH - 20;
-    graphMetrics.height = WINDOW_HEIGHT - 20;
+    graphMetrics.width = windowWidth - 20;
+    graphMetrics.height = windowHeight - 20;
     graphMetrics.pos = Vector2d(10, 10);
     graphMetrics.minX = 0;
     graphMetrics.maxX = 2;

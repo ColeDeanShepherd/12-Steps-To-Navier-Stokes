@@ -5,12 +5,12 @@
 #include "Render.h"
 #include "Step3.h"
 
-Step3Diffusion1D::Step3Diffusion1D()
+Step3Diffusion1D::Step3Diffusion1D(const int windowWidth, const int windowHeight)
 {
     title = "Step 3: Diffusion";
 
-    graphMetrics.width = WINDOW_WIDTH - 20;
-    graphMetrics.height = WINDOW_HEIGHT - 20;
+    graphMetrics.width = windowWidth - 20;
+    graphMetrics.height = windowHeight - 20;
     graphMetrics.pos = Vector2d(10, 10);
     graphMetrics.minX = 0;
     graphMetrics.maxX = 2;

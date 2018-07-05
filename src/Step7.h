@@ -7,7 +7,7 @@
 class Step7Diffusion2D : public Step
 {
 public:
-    Step7Diffusion2D();
+    Step7Diffusion2D(const int windowWidth, const int windowHeight);
     void applyInitialConditions();
     void applyBoundaryConditions(std::vector<std::vector<double>>& newU);
     void update(const double dt);

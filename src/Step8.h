@@ -7,7 +7,7 @@
 class Step8BurgersEquation2D : public Step
 {
 public:
-    Step8BurgersEquation2D();
+    Step8BurgersEquation2D(const int windowWidth, const int windowHeight);
     void applyInitialConditions();
     void applyBoundaryConditions();
     void update(const double dt);

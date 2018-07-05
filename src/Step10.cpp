@@ -4,18 +4,17 @@
 #include "Vector2d.h"
 #include "GraphMetrics.h"
 #include "FiniteDifference.h"
-#include "LinearAlgebra.h"
 #include "Render.h"
 #include "Step10.h"
 
-Step10PoissonEquation2D::Step10PoissonEquation2D()
+Step10PoissonEquation2D::Step10PoissonEquation2D(const int windowWidth, const int windowHeight)
 {
     title = "Step 10: Poisson Equation";
 
     fixedTimeStep = 1.0 / 60;
 
-    graphMetrics.width = WINDOW_WIDTH - 20;
-    graphMetrics.height = WINDOW_HEIGHT - 20;
+    graphMetrics.width = windowWidth - 20;
+    graphMetrics.height = windowHeight - 20;
     graphMetrics.pos = Vector2d(10, 10);
     graphMetrics.minX = 0;
     graphMetrics.maxX = 2;

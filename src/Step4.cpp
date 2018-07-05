@@ -6,12 +6,12 @@
 #include "Render.h"
 #include "Step4.h"
 
-Step4BurgersEquation1D::Step4BurgersEquation1D()
+Step4BurgersEquation1D::Step4BurgersEquation1D(const int windowWidth, const int windowHeight)
 {
     title = "Step 4: Burgers' Equation";
 
-    graphMetrics.width = WINDOW_WIDTH - 20;
-    graphMetrics.height = WINDOW_HEIGHT - 20;
+    graphMetrics.width = windowWidth - 20;
+    graphMetrics.height = windowHeight - 20;
     graphMetrics.pos = Vector2d(10, 10);
     graphMetrics.minX = 0;
     graphMetrics.maxX = 2 * M_PI;

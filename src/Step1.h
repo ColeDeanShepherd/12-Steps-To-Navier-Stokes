@@ -7,7 +7,7 @@
 class Step1LinearConvection1D : public Step
 {
 public:
-    Step1LinearConvection1D();
+    Step1LinearConvection1D(const int windowWidth, const int windowHeight);
     void update(const double dt);
     void draw(SDL_Renderer* renderer);
 private:

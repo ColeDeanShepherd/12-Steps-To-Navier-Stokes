@@ -7,7 +7,7 @@
 class Step3Diffusion1D : public Step
 {
 public:
-    Step3Diffusion1D();
+    Step3Diffusion1D(const int windowWidth, const int windowHeight);
     void update(const double dt);
     void draw(SDL_Renderer* renderer);
 private:

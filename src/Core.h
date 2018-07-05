@@ -1,26 +1,27 @@
 #pragma once
 
-namespace std
+#include <string>
+#include <vector>
+
+template <typename T>
+T clamp(const T value, const T min, const T max)
 {
-    template <typename T>
-    T clamp(T value, T min, T max)
+    if(value < min)
     {
-        if(value < min)
-        {
-            return min;
-        }
-        else if(value > max)
-        {
-            return max;
-        }
-        else
-        {
-            return value;
-        }
+        return min;
+    }
+    else if(value > max)
+    {
+        return max;
+    }
+    else
+    {
+        return value;
     }
 }
 
-int wrap(int value, int minValue, int maxValue);
+int wrap(int value, const int minValue, const int maxValue);
 
-const int WINDOW_WIDTH = 640;
-const int WINDOW_HEIGHT = 480;
+std::vector<double> zeros(const size_t rowCount);
+std::vector<std::vector<double>> zeros(const size_t rowCount, const size_t columnCount);
+std::string toString(const std::vector<std::vector<double>>& matrix);

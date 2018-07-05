@@ -6,12 +6,12 @@
 #include "Render.h"
 #include "Step5.h"
 
-Step5LinearConvection2D::Step5LinearConvection2D()
+Step5LinearConvection2D::Step5LinearConvection2D(const int windowWidth, const int windowHeight)
 {
     title = "Step 5: 2D Linear Convection";
 
-    graphMetrics.width = WINDOW_WIDTH - 20;
-    graphMetrics.height = WINDOW_HEIGHT - 20;
+    graphMetrics.width = windowWidth - 20;
+    graphMetrics.height = windowHeight - 20;
     graphMetrics.pos = Vector2d(10, 10);
     graphMetrics.minX = 0;
     graphMetrics.maxX = 2;

@@ -124,10 +124,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\App.cpp" />
     <ClCompile Include="..\..\..\src\Core.cpp" />
     <ClCompile Include="..\..\..\src\FiniteDifference.cpp" />
     <ClCompile Include="..\..\..\src\GraphMetrics.cpp" />
-    <ClCompile Include="..\..\..\src\LinearAlgebra.cpp" />
     <ClCompile Include="..\..\..\src\Main.cpp" />
     <ClCompile Include="..\..\..\src\Render.cpp" />
     <ClCompile Include="..\..\..\src\Step1.cpp" />
@@ -145,10 +145,10 @@
     <ClCompile Include="..\..\..\src\Vector2d.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\src\App.h" />
     <ClInclude Include="..\..\..\src\Core.h" />
     <ClInclude Include="..\..\..\src\FiniteDifference.h" />
     <ClInclude Include="..\..\..\src\GraphMetrics.h" />
-    <ClInclude Include="..\..\..\src\LinearAlgebra.h" />
     <ClInclude Include="..\..\..\src\Render.h" />
     <ClInclude Include="..\..\..\src\Step.h" />
     <ClInclude Include="..\..\..\src\Step1.h" />

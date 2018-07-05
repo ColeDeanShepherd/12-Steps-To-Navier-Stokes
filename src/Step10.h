@@ -7,7 +7,7 @@
 class Step10PoissonEquation2D : public Step
 {
 public:
-    Step10PoissonEquation2D();
+    Step10PoissonEquation2D(const int windowWidth, const int windowHeight);
     void applyBoundaryConditions();
     void update(const double dt);
     void draw(SDL_Renderer* renderer);

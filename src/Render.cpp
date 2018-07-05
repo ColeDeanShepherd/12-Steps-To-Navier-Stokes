@@ -37,7 +37,7 @@ void updateHeightmap(
         {
             const auto pixelBytesOffset = (pitch * pixelRowIndex) + (4 * pixelColumnIndex);
 
-            const auto valuePercent = std::clamp<double>(
+            const auto valuePercent = clamp<double>(
                 (values[pixelColumnIndex][(height - 1) - pixelRowIndex] - minValue) / (maxValue - minValue),
                 0, 1);
             const auto pixelValue = (unsigned char)(255 * valuePercent);

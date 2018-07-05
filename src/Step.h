@@ -3,6 +3,7 @@
 #include <string>
 
 struct SDL_Renderer;
+struct SDL_Texture;
 
 class Step
 {

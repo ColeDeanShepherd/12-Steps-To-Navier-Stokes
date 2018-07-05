@@ -7,7 +7,7 @@
 class Step11CavityFlow : public Step
 {
 public:
-    Step11CavityFlow();
+    Step11CavityFlow(const int windowWidth, const int windowHeight);
 
     void applyPBoundaryConditions();
     void updateP(const double dt);

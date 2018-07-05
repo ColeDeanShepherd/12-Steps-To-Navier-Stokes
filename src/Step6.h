@@ -7,7 +7,7 @@
 class Step6NonlinearConvection2D : public Step
 {
 public:
-    Step6NonlinearConvection2D();
+    Step6NonlinearConvection2D(const int windowWidth, const int windowHeight);
     void applyInitialCondition();
     void applyBoundaryConditions();
     void update(const double dt);

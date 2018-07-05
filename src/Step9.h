@@ -7,7 +7,7 @@
 class Step9LaplaceEquation2D : public Step
 {
 public:
-    Step9LaplaceEquation2D();
+    Step9LaplaceEquation2D(const int windowWidth, const int windowHeight);
     void applyInitialConditions();
     void applyBoundaryConditions(std::vector<std::vector<double>>& p);
     void update(const double dt);
