@@ -2,6 +2,8 @@
 
 Lorena A. Barba's "[12 steps to Navier-Stokes](http://lorenabarba.com/blog/cfd-python-12-steps-to-navier-stokes/)", implemented with C++ & SDL 2.
 
+View online at http://coledeanshepherd.com/12-Steps-To-Navier-Stokes.html.
+
 ### Getting Started
 
 1. Download [SDL 2](https://www.libsdl.org/download-2.0.php).
